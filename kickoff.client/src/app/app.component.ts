@@ -1,11 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 
-interface WeatherForecast {
-  date: string;
-  temperatureC: number;
-  temperatureF: number;
-  summary: string;
+interface HomeData {
+  message: string;
 }
 
 @Component({
@@ -14,23 +11,32 @@ interface WeatherForecast {
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
-  public forecasts: WeatherForecast[] = [];
+  public homeData: HomeData = { message: 'Nope' };
 
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.getForecasts();
+    this.getHomeData();
   }
 
-  getForecasts() {
-    this.http.get<WeatherForecast[]>('/weatherforecast').subscribe(
-      (result) => {
-        this.forecasts = result;
+  getHomeData() {
+    this.http.get<HomeData>('/api/Home').subscribe({
+      next: (result) => {
+        if (result && typeof result.message === 'string') {
+          this.homeData = result;
+        } else {
+          console.warn('Unexpected Home API response', result);
+        }
       },
-      (error) => {
-        console.error(error);
+      error: (error) => {
+        console.error('Home request failed', {
+          status: error?.status,
+          url: error?.url,
+          message: error?.message,
+          body: error?.error
+        });
       }
-    );
+    });
   }
 
   title = 'kickoff.client';
